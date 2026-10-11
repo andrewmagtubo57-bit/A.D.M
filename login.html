@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171717">
+  <title>A.D.M</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <main class="auth-card">
+    <h1>Login</h1>
+    <p class="subtitle">Welcome back</p>
+
+    <form id="loginForm" novalidate>
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Enter your registered email"
+             autocomplete="email" required>
+      <small id="emailError" class="field-error"></small>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password"
+             autocomplete="current-password" required>
+      <small id="passwordError" class="field-error"></small>
+
+      <div class="terms-row">
+        <input type="checkbox" id="terms">
+        <label for="terms">I agree to the Terms and Conditions</label>
+      </div>
+      <small id="termsError" class="field-error"></small>
+
+      <p id="formMessage" class="form-message" role="status" aria-live="polite"></p>
+      <button id="loginButton" type="submit">Login</button>
+      <button class="secondary-button" type="button" id="createAccountButton">Create Account</button>
+    </form>
+
+    <p class="auth-link"><a href="forgot.html">Forgot password?</a></p>
+  </main>
+  <script type="module" src="login.js"></script>
+</body>
+</html>

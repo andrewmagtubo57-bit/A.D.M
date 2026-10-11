@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <main class="auth-card">
+    <h1>Welcome</h1>
+    <p id="welcomeMessage" class="subtitle">You are signed in.</p>
+    <p id="homeMessage" class="form-message"></p>
+    <button id="logoutButton" type="button">Log Out</button>
+  </main>
+  <script type="module">
+    import { auth } from "./firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+    const welcome = document.getElementById("welcomeMessage");
+    const message = document.getElementById("homeMessage");
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.replace("login.html");
+        return;
+      }
+      welcome.textContent = `You are signed in${user.displayName ? ", " + user.displayName : ""}.`;
+    });
+
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        sessionStorage.removeItem("loggedInUid");
+        window.location.href = "login.html";
+      } catch (error) {
+        console.error(error);
+        message.textContent = "Could not log out. Please try again.";
+        message.className = "form-message error-message";
+      }
+    });
+  </script>
+</body>
+</html>
