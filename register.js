@@ -201,3 +201,23 @@ form.addEventListener("submit", async event => {
     submitButton.textContent = "Register";
   }
 });
+
+// Show/hide password toggle
+document.querySelectorAll(".toggle-password").forEach(button => {
+  button.addEventListener("click", () => {
+    const input = document.getElementById(button.dataset.target);
+    const isPasswordHidden = input.type === "password";
+
+    input.type = isPasswordHidden ? "text" : "password";
+
+    button.setAttribute(
+      "aria-label",
+      isPasswordHidden ? "Hide password" : "Show password"
+    );
+
+    button.setAttribute(
+      "aria-pressed",
+      String(isPasswordHidden)
+    );
+  });
+});
