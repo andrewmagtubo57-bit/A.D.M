@@ -1,44 +1,212 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171717">
   <title>Home</title>
   <link rel="stylesheet" href="auth.css">
+
+  <style>
+    .biodata-title {
+      margin: 25px 0 15px;
+      text-align: left;
+      font-size: 20px;
+    }
+
+    .biodata-container {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .biodata-item {
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid #444444;
+      border-radius: 9px;
+      background: #303030;
+      text-align: left;
+    }
+
+    .biodata-label {
+      display: block;
+      margin-bottom: 8px;
+      color: #aaaaaa;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .biodata-value {
+      display: block;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    #logoutButton {
+      display: block;
+      width: 100%;
+      min-height: 45px;
+      margin-top: 15px;
+      padding: 12px;
+      border: none;
+      border-radius: 7px;
+      background: #6868ff;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #logoutButton:hover {
+      background: #5555e8;
+    }
+
+    #logoutButton:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 350px) {
+      .biodata-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
 </head>
+
 <body>
   <main class="auth-card">
     <h1>Welcome</h1>
-    <p id="welcomeMessage" class="subtitle">You are signed in.</p>
-    <p id="homeMessage" class="form-message"></p>
-    <button id="logoutButton" type="button">Log Out</button>
+    <p id="welcomeMessage" class="subtitle">Checking your account...</p>
+
+```
+<h2 class="biodata-title">My Biodata</h2>
+
+<div class="biodata-container">
+  <div class="biodata-item">
+    <span class="biodata-label">Username</span>
+    <span class="biodata-value" id="profileUsername">Loading...</span>
+  </div>
+
+  <div class="biodata-item">
+    <span class="biodata-label">Gmail</span>
+    <span class="biodata-value" id="profileEmail">Loading...</span>
+  </div>
+
+  <div class="biodata-item">
+    <span class="biodata-label">Birthday</span>
+    <span class="biodata-value" id="profileBirthday">Loading...</span>
+  </div>
+
+  <div class="biodata-item">
+    <span class="biodata-label">Gender</span>
+    <span class="biodata-value" id="profileGender">Loading...</span>
+  </div>
+</div>
+
+<p id="homeMessage" class="form-message" role="status" aria-live="polite"></p>
+
+<button id="logoutButton" type="button">Log Out</button>
+```
+
   </main>
+
   <script type="module">
-    import { auth } from "./firebase-config.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { auth, db } from "./firebase-config.js";
+
+    import {
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+    import {
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
     const welcome = document.getElementById("welcomeMessage");
     const message = document.getElementById("homeMessage");
+    const logoutButton = document.getElementById("logoutButton");
 
-    onAuthStateChanged(auth, user => {
+    const profileUsername = document.getElementById("profileUsername");
+    const profileEmail = document.getElementById("profileEmail");
+    const profileBirthday = document.getElementById("profileBirthday");
+    const profileGender = document.getElementById("profileGender");
+
+    onAuthStateChanged(auth, async user => {
       if (!user) {
         window.location.replace("login.html");
         return;
       }
-      welcome.textContent = `You are signed in${user.displayName ? ", " + user.displayName : ""}.`;
+
+      welcome.textContent = `You are signed in, ${user.displayName || user.email || "User"}.`;
+
+      // Use the authenticated user's UID to retrieve their profile.
+      try {
+        const profileRef = doc(db, "users", user.uid);
+        const profileSnapshot = await getDoc(profileRef);
+
+        if (!auth.currentUser || auth.currentUser.uid !== user.uid) {
+          return;
+        }
+
+        if (profileSnapshot.exists()) {
+          const profile = profileSnapshot.data();
+
+          profileUsername.textContent = profile.username || user.displayName || "Not provided";
+          profileEmail.textContent = user.email || profile.email || "Not provided";
+          profileBirthday.textContent = profile.birthday || "Not provided";
+          profileGender.textContent = profile.gender || "Not provided";
+        } else {
+          profileUsername.textContent = user.displayName || "Not provided";
+          profileEmail.textContent = user.email || "Not provided";
+          profileBirthday.textContent = "Profile not found";
+          profileGender.textContent = "Profile not found";
+
+          message.textContent = "Your account exists, but your biodata record was not found.";
+          message.className = "form-message error-message";
+        }
+      } catch (error) {
+        console.error("Error loading biodata:", error);
+
+        profileUsername.textContent = user.displayName || "Unavailable";
+        profileEmail.textContent = user.email || "Unavailable";
+        profileBirthday.textContent = "Unavailable";
+        profileGender.textContent = "Unavailable";
+
+        message.textContent = "Could not load your biodata. Please check your internet connection and try again.";
+        message.className = "form-message error-message";
+      }
     });
 
-    document.getElementById("logoutButton").addEventListener("click", async () => {
+    logoutButton.addEventListener("click", async () => {
+      logoutButton.disabled = true;
+      logoutButton.textContent = "Logging out...";
+
       try {
         await signOut(auth);
         sessionStorage.removeItem("loggedInUid");
         window.location.href = "login.html";
       } catch (error) {
-        console.error(error);
+        console.error("Logout error:", error);
+
         message.textContent = "Could not log out. Please try again.";
         message.className = "form-message error-message";
+
+        logoutButton.disabled = false;
+        logoutButton.textContent = "Log Out";
       }
     });
   </script>
+
 </body>
 </html>
