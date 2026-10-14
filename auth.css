@@ -1,5 +1,4 @@
 /* General page styling */
-
 * {
   box-sizing: border-box;
 }
@@ -249,91 +248,6 @@ select:focus {
   text-decoration: underline;
 }
 
-/* ===== HOME BIODATA DESIGN ONLY ===== */
-
-.home-biodata {
-  width: 100%;
-  margin-top: 25px;
-}
-
-.home-biodata .biodata-title {
-  margin: 0 0 15px;
-  color: #8ee6a0;
-  font-size: 20px;
-  text-align: left;
-}
-
-.home-biodata .biodata-container {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  width: 100%;
-  margin-bottom: 22px;
-}
-
-.home-biodata .biodata-item {
-  min-width: 0;
-  padding: 14px;
-  background: #303030;
-  border: 1px solid #454545;
-  border-left: 3px solid #65c982;
-  border-radius: 9px;
-  text-align: left;
-  transition: border-color 0.2s ease, background 0.2s ease;
-}
-
-.home-biodata .biodata-item:hover {
-  background: #363636;
-  border-color: #65c982;
-}
-
-.home-biodata .biodata-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #a8b5aa;
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.home-biodata .biodata-value {
-  display: block;
-  color: #f2f2f2;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-.home-biodata #logoutButton {
-  width: 100%;
-  min-height: 45px;
-  padding: 12px;
-  margin-top: 5px;
-  border: 1px solid #65c982;
-  border-radius: 7px;
-  background: #65c982;
-  color: #171717;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.home-biodata #logoutButton:hover {
-  background: #8ee6a0;
-}
-
-.home-biodata #logoutButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.home-biodata #homeMessage {
-  overflow-wrap: anywhere;
-}
-
 /* Mobile responsive design */
 @media (max-width: 480px) {
   body {
@@ -367,12 +281,5 @@ select:focus {
 
   .field-error {
     font-size: 12px;
-  }
-}
-
-/* Very small screens: home biodata becomes one column */
-@media (max-width: 350px) {
-  .home-biodata .biodata-container {
-    grid-template-columns: 1fr;
   }
 }
