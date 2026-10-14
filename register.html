@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,8 +39,19 @@
       <small id="genderError" class="field-error"></small>
 
       <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Create a strong password"
-             autocomplete="new-password" required>
+      <div class="password-input-wrapper">
+        <input type="password" id="password"
+               placeholder="Create a strong password"
+               autocomplete="new-password" required>
+        <button type="button" class="toggle-password"
+                data-target="password"
+                aria-label="Show password" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
       <small id="passwordError" class="field-error"></small>
 
       <div class="password-rules">
@@ -53,8 +65,19 @@
       </div>
 
       <label for="confirmPassword">Confirm Password</label>
-      <input type="password" id="confirmPassword" placeholder="Retype your password"
-             autocomplete="new-password" required>
+      <div class="password-input-wrapper">
+        <input type="password" id="confirmPassword"
+               placeholder="Retype your password"
+               autocomplete="new-password" required>
+        <button type="button" class="toggle-password"
+                data-target="confirmPassword"
+                aria-label="Show password" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
       <small id="confirmPasswordError" class="field-error"></small>
 
       <div class="terms-row">
@@ -63,13 +86,18 @@
       </div>
       <small id="termsError" class="field-error"></small>
 
-      <p id="formMessage" class="form-message" role="status" aria-live="polite"></p>
+      <p id="formMessage" class="form-message"
+         role="status" aria-live="polite"></p>
+
       <button id="registerButton" type="submit">Register</button>
       <button class="secondary-button" type="reset">Reset</button>
     </form>
 
-    <p class="auth-link">Already have an account? <a href="login.html">Login here</a></p>
+    <p class="auth-link">
+      Already have an account? <a href="login.html">Login here</a>
+    </p>
   </main>
+
   <script type="module" src="register.js"></script>
 </body>
 </html>
