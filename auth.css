@@ -106,6 +106,55 @@ select[aria-invalid="true"] {
   font-size: 13px;
   line-height: 1.5;
 }
+/* Password show/hide icon */
+.password-input-wrapper {
+position: relative;
+width: 100%;
+}
+
+.password-input-wrapper input {
+width: 100%;
+box-sizing: border-box;
+padding-right: 48px;
+}
+
+.toggle-password {
+position: absolute;
+top: 50%;
+right: 10px;
+transform: translateY(-50%);
+display: flex;
+align-items: center;
+justify-content: center;
+width: 34px;
+height: 34px;
+padding: 6px;
+border: none;
+background: transparent;
+color: #777;
+cursor: pointer;
+}
+
+.toggle-password svg {
+width: 21px;
+height: 21px;
+fill: none;
+stroke: currentColor;
+stroke-width: 1.8;
+stroke-linecap: round;
+stroke-linejoin: round;
+}
+
+.toggle-password:hover {
+color: #222;
+}
+
+.toggle-password:focus-visible {
+outline: 2px solid #777;
+border-radius: 5px;
+}
+
+
 
 .password-rules ul {
   margin: 6px 0 0;
