@@ -1,5 +1,4 @@
- <!DOCTYPE html>
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -9,42 +8,39 @@
   <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-  <main class="auth-card home-biodata">
+  <main class="auth-card">
     <h1>Welcome</h1>
     <p id="welcomeMessage" class="subtitle">Checking your account...</p>
 
-```
-<section class="home-biodata">
-  <h2 class="biodata-title">My Biodata</h2>
+    <section class="home-biodata">
+      <h2 class="biodata-title">My Biodata</h2>
 
-  <div class="biodata-container">
-    <div class="biodata-item">
-      <span class="biodata-label">Username</span>
-      <span class="biodata-value" id="profileUsername">Loading...</span>
-    </div>
+      <div class="biodata-container">
+        <div class="biodata-item">
+          <span class="biodata-label">Username</span>
+          <span class="biodata-value" id="profileUsername">Loading...</span>
+        </div>
 
-    <div class="biodata-item">
-      <span class="biodata-label">Gmail</span>
-      <span class="biodata-value" id="profileEmail">Loading...</span>
-    </div>
+        <div class="biodata-item">
+          <span class="biodata-label">Gmail</span>
+          <span class="biodata-value" id="profileEmail">Loading...</span>
+        </div>
 
-    <div class="biodata-item">
-      <span class="biodata-label">Birthday</span>
-      <span class="biodata-value" id="profileBirthday">Loading...</span>
-    </div>
+        <div class="biodata-item">
+          <span class="biodata-label">Birthday</span>
+          <span class="biodata-value" id="profileBirthday">Loading...</span>
+        </div>
 
-    <div class="biodata-item">
-      <span class="biodata-label">Gender</span>
-      <span class="biodata-value" id="profileGender">Loading...</span>
-    </div>
-  </div>
-</section>
+        <div class="biodata-item">
+          <span class="biodata-label">Gender</span>
+          <span class="biodata-value" id="profileGender">Loading...</span>
+        </div>
+      </div>
 
-<p id="homeMessage" class="form-message" role="status" aria-live="polite"></p>
+      <p id="homeMessage" class="form-message" role="status" aria-live="polite"></p>
 
-<button id="logoutButton" type="button">Log Out</button>
-```
-
+      <button id="logoutButton" type="button">Log Out</button>
+    </section>
   </main>
 
   <script type="module">
@@ -143,6 +139,5 @@
       }
     });
   </script>
-
 </body>
 </html>
