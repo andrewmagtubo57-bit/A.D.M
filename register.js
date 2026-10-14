@@ -196,6 +196,7 @@ form.addEventListener("submit", async event => {
     } else {
       setMessage(firebaseErrorText(error));
     }
+
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = "Register";
@@ -206,18 +207,9 @@ form.addEventListener("submit", async event => {
 document.querySelectorAll(".toggle-password").forEach(button => {
   button.addEventListener("click", () => {
     const input = document.getElementById(button.dataset.target);
-    const isPasswordHidden = input.type === "password";
 
-    input.type = isPasswordHidden ? "text" : "password";
+    if (!input) return;
 
-    button.setAttribute(
-      "aria-label",
-      isPasswordHidden ? "Hide password" : "Show password"
-    );
-
-    button.setAttribute(
-      "aria-pressed",
-      String(isPasswordHidden)
-    );
+    input.type = input.type === "password" ? "text" : "password";
   });
 });
