@@ -6,45 +6,6 @@
   <meta name="theme-color" content="#171717">
   <title>Home</title>
   <link rel="stylesheet" href="auth.css">
-
-  <style>
-    [hidden] { display: none !important; }
-
-    .biodata-input {
-      width: 100%;
-      margin-top: 6px;
-      padding: 10px 12px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.25);
-      color: #fff;
-      font: inherit;
-      color-scheme: dark;
-    }
-
-    .biodata-input:focus {
-      outline: none;
-      border-color: #8fe388;
-    }
-
-    .biodata-input option { color: #000; }
-
-    .action-row {
-      display: flex;
-      gap: 10px;
-      margin: 12px 0;
-    }
-
-    .action-row button { flex: 1; margin: 0; }
-
-    button.secondary {
-      background: transparent;
-      color: #8fe388;
-      border: 1px solid #8fe388;
-    }
-
-    .success-message { color: #9be89b; }
-  </style>
 </head>
 <body>
   <main class="auth-card">
@@ -54,156 +15,103 @@
     <section class="home-biodata">
       <h2 class="biodata-title">My Biodata</h2>
 
-      <form id="biodataForm" novalidate>
+      <div id="biodataView">
         <div class="biodata-container">
-
           <div class="biodata-item">
             <span class="biodata-label">Username</span>
             <span class="biodata-value" id="profileUsername">Loading...</span>
-            <input class="biodata-input" id="editUsername" type="text"
-                   maxlength="30" placeholder="Username" hidden>
           </div>
-
           <div class="biodata-item">
-            <span class="biodata-label">Gmail</span>
+            <span class="biodata-label">Email</span>
             <span class="biodata-value" id="profileEmail">Loading...</span>
-            <!-- Email is read-only: it is your login and is managed by Firebase Auth -->
           </div>
-
           <div class="biodata-item">
             <span class="biodata-label">Birthday</span>
             <span class="biodata-value" id="profileBirthday">Loading...</span>
-            <input class="biodata-input" id="editBirthday" type="date" hidden>
           </div>
-
           <div class="biodata-item">
             <span class="biodata-label">Gender</span>
             <span class="biodata-value" id="profileGender">Loading...</span>
-            <select class="biodata-input" id="editGender" hidden>
-              <option value="">Select gender</option>
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
-              <option value="Other">Other</option>
-              <option value="Prefer not to say">Prefer not to say</option>
-            </select>
           </div>
-
         </div>
+        <button id="editButton" type="button" class="secondary-button">Edit Info</button>
+      </div>
 
-        <p id="homeMessage" class="form-message" role="status" aria-live="polite"></p>
+      <form id="editForm" hidden novalidate>
+        <label for="editUsername">Username</label>
+        <input id="editUsername" type="text" autocomplete="username">
+        <small id="editUsernameError" class="field-error"></small>
 
-        <!-- View mode -->
-        <button id="editButton" type="button" class="secondary" disabled>Edit Biodata</button>
+        <label for="editBirthday">Birthday</label>
+        <input id="editBirthday" type="date">
+        <small id="editBirthdayError" class="field-error"></small>
 
-        <!-- Edit mode -->
-        <div id="editActions" class="action-row" hidden>
-          <button id="saveButton" type="submit">Save Changes</button>
-          <button id="cancelButton" type="button" class="secondary">Cancel</button>
-        </div>
+        <label for="editGender">Gender</label>
+        <select id="editGender">
+          <option value="">-- Select Gender --</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Prefer not to say</option>
+        </select>
+        <small id="editGenderError" class="field-error"></small>
+
+        <button id="saveButton" type="submit">Save Changes</button>
+        <button id="cancelButton" type="button" class="secondary-button">Cancel</button>
       </form>
 
+      <p id="homeMessage" class="form-message" role="status" aria-live="polite"></p>
       <button id="logoutButton" type="button">Log Out</button>
     </section>
   </main>
 
   <script type="module">
     import { auth, db } from "./firebase-config.js";
+    import { onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-    import {
-      onAuthStateChanged,
-      signOut,
-      updateProfile
-    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    const $ = id => document.getElementById(id);
+    const msg = $("homeMessage");
+    const today = new Date().toISOString().slice(0, 10);
+    $("editBirthday").max = today;
 
-    import {
-      doc,
-      getDoc,
-      runTransaction,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-    // ---------- Elements ----------
-    const welcome = document.getElementById("welcomeMessage");
-    const message = document.getElementById("homeMessage");
-    const form = document.getElementById("biodataForm");
-    const logoutButton = document.getElementById("logoutButton");
-    const editButton = document.getElementById("editButton");
-    const editActions = document.getElementById("editActions");
-    const saveButton = document.getElementById("saveButton");
-    const cancelButton = document.getElementById("cancelButton");
-
-    const view = {
-      username: document.getElementById("profileUsername"),
-      email: document.getElementById("profileEmail"),
-      birthday: document.getElementById("profileBirthday"),
-      gender: document.getElementById("profileGender")
-    };
-
-    const input = {
-      username: document.getElementById("editUsername"),
-      birthday: document.getElementById("editBirthday"),
-      gender: document.getElementById("editGender")
-    };
-
-    // Today's date as YYYY-MM-DD (birthday can't be in the future)
-    input.birthday.max = new Date().toISOString().split("T")[0];
-
-    // ---------- State ----------
     let currentUser = null;
     let profile = { username: "", birthday: "", gender: "" };
 
-    // ---------- Helpers ----------
-    function setMessage(text, type = "") {
-      message.textContent = text;
-      message.className = "form-message" +
-        (type === "error" ? " error-message" : type === "success" ? " success-message" : "");
+    const show = (text, ok = false) => {
+      msg.className = "form-message " + (ok ? "success-message" : "error-message");
+      msg.textContent = text;
+    };
+
+    function formatDate(value) {
+      if (!value) return "Not provided";
+      const [y, m, d] = value.split("-").map(Number);
+      const date = new Date(y, m - 1, d);
+      return isNaN(date) ? value : date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
     }
 
-    function showWelcome() {
-      const name = profile.username || (currentUser && currentUser.displayName);
-      welcome.textContent = You are signed in${name ? ", " + name : ""}.;
-    }
-
-    function renderView() {
-      view.username.textContent = profile.username || "Not provided";
-      view.email.textContent = (currentUser && currentUser.email) || "Not provided";
-      view.birthday.textContent = profile.birthday || "Not provided";
-      view.gender.textContent = profile.gender || "Not provided";
-      showWelcome();
+    function render() {
+      $("profileUsername").textContent = profile.username || "Not provided";
+      $("profileEmail").textContent = currentUser.email || "Not provided";
+      $("profileBirthday").textContent = formatDate(profile.birthday);
+      $("profileGender").textContent = profile.gender || "Not provided";
+      $("welcomeMessage").textContent = You are signed in${profile.username ? ", " + profile.username : ""}.;
     }
 
     function setEditing(editing) {
-      // Show inputs while editing, plain text otherwise
-      ["username", "birthday", "gender"].forEach(key => {
-        view[key].hidden = editing;
-        input[key].hidden = !editing;
-      });
-
-      editButton.hidden = editing;
-      editActions.hidden = !editing;
-
-      if (editing) {
-        input.username.value = profile.username;
-        input.birthday.value = profile.birthday;
-        input.gender.value = profile.gender;
-        input.username.focus();
-      }
+      $("biodataView").hidden = editing;
+      $("editForm").hidden = !editing;
     }
 
-    // ---------- Load profile ----------
     onAuthStateChanged(auth, async user => {
       if (!user) {
         window.location.replace("login.html");
         return;
       }
-
       currentUser = user;
-      showWelcome();
+      profile.username = user.displayName || "";
 
       try {
         const snapshot = await getDoc(doc(db, "users", user.uid));
-
-        // Don't display data if the signed-in user changed during loading.
         if (!auth.currentUser || auth.currentUser.uid !== user.uid) return;
 
         if (snapshot.exists()) {
@@ -213,131 +121,70 @@
             birthday: data.birthday || "",
             gender: data.gender || ""
           };
-          setMessage("");
         } else {
-          profile = { username: user.displayName || "", birthday: "", gender: "" };
-          setMessage("No biodata saved yet. Click Edit Biodata to add it.");
+          show("No saved details yet. Tap Edit Info to add them.");
         }
-
-        renderView();
-        editButton.disabled = false;
       } catch (error) {
         console.error("Error loading biodata:", error);
-
-        Object.values(view).forEach(el => (el.textContent = "Unavailable"));
-        view.email.textContent = user.email || "Unavailable";
-
-        setMessage(
-          "Could not load your biodata. Please check your internet connection and Firestore security rules.",
-          "error"
-        );
+        show("Could not load your biodata. Please check your internet connection and Firestore security rules.");
       }
+      render();
     });
 
-    // ---------- Edit / Cancel ----------
-    editButton.addEventListener("click", () => {
-      setMessage("");
+    $("editButton").addEventListener("click", () => {
+      msg.textContent = "";
+      $("editUsername").value = profile.username;
+      $("editBirthday").value = profile.birthday;
+      $("editGender").value = profile.gender;
+      ["Username", "Birthday", "Gender"].forEach(name => ($("edit" + name + "Error").textContent = ""));
       setEditing(true);
     });
 
-    cancelButton.addEventListener("click", () => {
-      setMessage("");
-      setEditing(false);
-    });
+    $("cancelButton").addEventListener("click", () => setEditing(false));
 
-    // ---------- Save ----------
-    form.addEventListener("submit", async event => {
+    $("editForm").addEventListener("submit", async event => {
       event.preventDefault();
-      if (!currentUser) return;
+      const username = $("editUsername").value.trim();
+      const birthday = $("editBirthday").value;
+      const gender = $("editGender").value;
 
-      const username = input.username.value.trim();
-      const birthday = input.birthday.value;
-      const gender = input.gender.value;
+      const errors = {
+        Username: /^\w{8,}$/.test(username) ? "" : "Use at least 8 letters, numbers, or _.",
+        Birthday: birthday && birthday >= "1900-01-01" && birthday <= today ? "" : "Enter a valid birthday.",
+        Gender: gender ? "" : "Select your gender."
+      };
+      Object.entries(errors).forEach(([name, text]) => ($("edit" + name + "Error").textContent = text));
+      if (Object.values(errors).some(Boolean)) return;
 
-      // Same rule as the register page
-      if (!/^[a-zA-Z0-9_]{8,30}$/.test(username)) {
-        setMessage("Username must be 8–30 characters: letters, numbers, or underscores only.", "error");
-        return;
-      }
-
-      if (birthday && new Date(birthday) > new Date()) {
-        setMessage("Birthday cannot be in the future.", "error");
-        return;
-      }
-
+      const saveButton = $("saveButton");
       saveButton.disabled = true;
       saveButton.textContent = "Saving...";
 
       try {
-        const uid = currentUser.uid;
-        const newKey = username.toLowerCase();
-        const oldKey = (profile.username || "").toLowerCase();
-
-        const profileRef = doc(db, "users", uid);
-        const newRef = doc(db, "usernames", newKey);
-        const oldRef = oldKey && oldKey !== newKey ? doc(db, "usernames", oldKey) : null;
-
-        // Keep usernames unique, same as the register page.
-        // merge:true also creates the profile if it doesn't exist yet.
-        await runTransaction(db, async tx => {
-          // All reads first
-          const newSnap = await tx.get(newRef);
-          const oldSnap = oldRef ? await tx.get(oldRef) : null;
-
-          if (newSnap.exists() && newSnap.data().uid !== uid) {
-            throw new Error("USERNAME_ALREADY_EXISTS");
-          }
-
-          // Then writes
-          if (!newSnap.exists()) {
-            tx.set(newRef, { uid, createdAt: serverTimestamp() });
-          }
-          if (oldSnap && oldSnap.exists() && oldSnap.data().uid === uid) {
-            tx.delete(oldRef); // free the old username
-          }
-          tx.set(
-            profileRef,
-            {
-              username,
-              email: currentUser.email,
-              birthday,
-              gender,
-              updatedAt: serverTimestamp()
-            },
-            { merge: true }
-          );
-        });
-
-        if (currentUser.displayName !== username) {
-          await updateProfile(currentUser, { displayName: username });
-        }
+        await setDoc(doc(db, "users", currentUser.uid), {
+          username, birthday, gender,
+          email: currentUser.email,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        await updateProfile(currentUser, { displayName: username });
 
         profile = { username, birthday, gender };
-        renderView();
+        render();
         setEditing(false);
-        setMessage("Biodata saved!", "success");
+        show("Your info was updated.", true);
       } catch (error) {
-        console.error("Error saving biodata:", error);
-        if (error.message === "USERNAME_ALREADY_EXISTS") {
-          setMessage("That username is already taken. Choose another one.", "error");
-          return;
-        }
-        setMessage(
-          error.code === "permission-denied"
-            ? "Permission denied. Check your Firestore security rules."
-            : "Could not save your biodata. Please try again.",
-          "error"
-        );
-      } finally {
-        saveButton.disabled = false;
-        saveButton.textContent = "Save Changes";
+        console.error("Save error:", error);
+        show("Could not save your changes. Please try again.");
       }
+
+      saveButton.disabled = false;
+      saveButton.textContent = "Save Changes";
     });
 
-    // ---------- Logout ----------
-    logoutButton.addEventListener("click", async () => {
-      logoutButton.disabled = true;
-      logoutButton.textContent = "Logging out...";
+    $("logoutButton").addEventListener("click", async () => {
+      const button = $("logoutButton");
+      button.disabled = true;
+      button.textContent = "Logging out...";
 
       try {
         await signOut(auth);
@@ -345,10 +192,9 @@
         window.location.href = "login.html";
       } catch (error) {
         console.error("Logout error:", error);
-        setMessage("Could not log out. Please try again.", "error");
-
-        logoutButton.disabled = false;
-        logoutButton.textContent = "Log Out";
+        show("Could not log out. Please try again.");
+        button.disabled = false;
+        button.textContent = "Log Out";
       }
     });
   </script>
